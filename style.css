@@ -18,4 +18,4 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'Helvetica', sans
 .msg-them { align-self: flex-start; background: #4e5058; }
 .user-info { padding: 10px; background: #232428; display: flex; justify-content: space-between; border-radius: 4px; align-items: center; }
 #login-btn, #save-username-btn { background: #5865f2; color: white; border: none; padding: 10px; border-radius: 4px; width: 100%; cursor: pointer; margin-top: 10px; }
-#logout-btn { background: transparent; color: #ed4245; border: none; cursor: pointer; font-size: 11px; }
+#logout-btn { background: transparent; color: #ed4245; border: none; cursor: pointer; font-size: 11
