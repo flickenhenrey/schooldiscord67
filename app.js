@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -20,7 +20,7 @@ const provider = new GoogleAuthProvider();
 let activeChatId = null;
 let myUsername = null;
 
-// --- AUTH LOGIC ---
+// Handle Auth State
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         const userDoc = await getDoc(doc(db, "users_by_email", user.email));
@@ -38,11 +38,17 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
+// Capture Redirect Result (fixes COOP/Popup issues)
+getRedirectResult(auth).catch(err => console.error("Auth error:", err));
+
+// Set Username
 document.getElementById('save-username-btn').onclick = async () => {
     const username = document.getElementById('username-input').value.trim().toLowerCase();
-    if (username.length < 2) return alert("Too short!");
+    if (username.length < 2) return alert("Username too short!");
     
-    // Save mapping
+    const nameCheck = await getDoc(doc(db, "usernames", username));
+    if (nameCheck.exists()) return alert("Username taken!");
+
     await setDoc(doc(db, "usernames", username), { email: auth.currentUser.email });
     await setDoc(doc(db, "users_by_email", auth.currentUser.email), { username: username });
     
@@ -53,18 +59,18 @@ document.getElementById('save-username-btn').onclick = async () => {
 
 function startApp() {
     document.getElementById('app-container').style.display = 'flex';
-    document.getElementById('user-display-name').innerText = myUsername;
+    document.getElementById('user-display-name').innerText = `@${myUsername}`;
     loadFriends();
 }
 
-// --- FRIEND LOGIC ---
+// Add Friend
 document.getElementById('add-friend-btn').onclick = async () => {
     const target = document.getElementById('friend-search').value.toLowerCase().trim();
-    if (target === myUsername) return;
+    if (!target || target === myUsername) return;
     
     const nameCheck = await getDoc(doc(db, "usernames", target));
     if (nameCheck.exists()) {
-        await setDoc(doc(db, `users/${myUsername}/friends`, target), { name: target });
+        await setDoc(doc(doc(db, "users", myUsername), "friends", target), { name: target });
         document.getElementById('friend-search').value = "";
         alert("Friend added!");
     } else {
@@ -73,21 +79,21 @@ document.getElementById('add-friend-btn').onclick = async () => {
 };
 
 function loadFriends() {
-    onSnapshot(collection(db, `users/${myUsername}/friends`), (snapshot) => {
+    onSnapshot(collection(doc(db, "users", myUsername), "friends"), (snapshot) => {
         const list = document.getElementById('friends-list');
         list.innerHTML = "";
         snapshot.forEach(doc => {
             const name = doc.data().name;
             const div = document.createElement('div');
             div.className = "friend-item";
-            div.innerText = `@ ${name}`;
+            div.innerText = `@${name}`;
             div.onclick = () => startChat(name);
             list.appendChild(div);
         });
     });
 }
 
-// --- CHAT LOGIC ---
+// Messaging
 function startChat(friendName) {
     activeChatId = [myUsername, friendName].sort().join("_");
     document.getElementById('chat-with-title').innerText = `@ ${friendName}`;
@@ -96,7 +102,7 @@ function startChat(friendName) {
 }
 
 document.getElementById('message-input').onkeypress = async (e) => {
-    if (e.key === 'Enter' && e.target.value !== "") {
+    if (e.key === 'Enter' && e.target.value.trim() !== "") {
         await addDoc(collection(db, `chats/${activeChatId}/messages`), {
             text: e.target.value,
             sender: myUsername,
@@ -122,5 +128,5 @@ function loadMessages() {
     });
 }
 
-document.getElementById('login-btn').onclick = () => signInWithPopup(auth, provider);
+document.getElementById('login-btn').onclick = () => signInWithRedirect(auth, provider);
 document.getElementById('logout-btn').onclick = () => signOut(auth);
