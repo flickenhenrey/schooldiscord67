@@ -7,19 +7,20 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="username-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(30, 31, 34, 0.98); z-index: 1000; justify-content: center; align-items: center; flex-direction: column;">
-        <div class="login-card">
-            <h2>Pick a Username</h2>
-            <p>Friends will use this to find you.</p>
-            <input type="text" id="username-input" placeholder="Username..." style="width: 80%; padding: 12px; margin: 15px 0; border-radius: 4px; border: none; background: #1e1f22; color: white;">
-            <button id="save-username-btn" style="background: #5865f2; color: white; border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer; width: 80%;">Finish</button>
+
+    <div id="username-modal" style="display: none;">
+        <div class="modal-content">
+            <h2>Create a Username</h2>
+            <p>What should friends call you?</p>
+            <input type="text" id="username-input" placeholder="Username (no spaces)...">
+            <button id="save-username-btn">Start Chatting</button>
         </div>
     </div>
 
     <div id="auth-container">
         <div class="login-card">
             <h1>SchoolDiscord</h1>
-            <p>schooldiscord67</p>
+            <p>A place for schooldiscord67</p>
             <button id="login-btn">Sign in with Google</button>
         </div>
     </div>
@@ -27,22 +28,31 @@
     <div id="app-container" style="display: none;">
         <nav class="sidebar">
             <div class="sidebar-header"><h3>Friends</h3></div>
+            
             <div class="search-area">
-                <input type="text" id="friend-search" placeholder="Search username...">
-                <button id="add-friend-btn">Add</button>
+                <input type="text" id="friend-search" placeholder="Friend's username...">
+                <button id="add-friend-btn">+</button>
             </div>
-            <div id="friends-list"></div>
-            <div class="user-footer">
-                <span id="user-display-name"></span>
+
+            <div id="friends-list">
+                </div>
+
+            <div class="user-profile">
+                <span id="my-username-display">@loading...</span>
                 <button id="logout-btn">Logout</button>
             </div>
         </nav>
 
         <main class="chat-area">
-            <header class="chat-header"><span id="chat-with-title">Select a friend</span></header>
-            <div id="messages-container"></div>
+            <header class="chat-header">
+                <span id="chat-title">Select a friend to message</span>
+            </header>
+            
+            <div id="messages-container">
+                </div>
+
             <div class="input-area">
-                <input type="text" id="message-input" placeholder="Message..." disabled autocomplete="off">
+                <input type="text" id="message-input" placeholder="Type a message..." disabled autocomplete="off">
             </div>
         </main>
     </div>
