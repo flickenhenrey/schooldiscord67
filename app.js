@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -19,53 +19,52 @@ const provider = new GoogleAuthProvider();
 let myUsername = null;
 let activeChatId = null;
 
-// --- 1. AUTHENTICATION ---
+// --- LOGIN & USERNAME CHECK ---
 onAuthStateChanged(auth, async (user) => {
     if (user) {
-        // Find who this email belongs to
-        const emailDoc = await getDoc(doc(db, "email_to_user", user.email));
-        
-        if (emailDoc.exists()) {
-            myUsername = emailDoc.data().username;
+        // Look up who this user is
+        const userRef = doc(db, "email_to_username", user.email);
+        const userSnap = await getDoc(userRef);
+
+        if (userSnap.exists()) {
+            myUsername = userSnap.data().username;
             startApp();
         } else {
-            // No username found - ask for one
+            // New user: Show username picker
             document.getElementById('username-modal').style.display = 'flex';
             document.getElementById('auth-container').style.display = 'none';
         }
     } else {
         document.getElementById('auth-container').style.display = 'flex';
         document.getElementById('app-container').style.display = 'none';
+        document.getElementById('username-modal').style.display = 'none';
     }
 });
 
-getRedirectResult(auth).catch(err => console.error(err));
-
-// --- 2. USERNAME REGISTRATION ---
+// Save New Username
 document.getElementById('save-username-btn').onclick = async () => {
-    const input = document.getElementById('username-input').value.trim().toLowerCase();
-    if (input.length < 3) return alert("Username too short!");
+    const val = document.getElementById('username-input').value.trim().toLowerCase();
+    if (val.length < 3) return alert("Too short!");
+    
+    const nameCheck = await getDoc(doc(db, "usernames", val));
+    if (nameCheck.exists()) return alert("Username taken!");
 
-    // Check if the username is taken
-    const nameCheck = await getDoc(doc(db, "usernames", input));
-    if (nameCheck.exists()) return alert("Username already taken!");
-
-    // Save mappings
-    await setDoc(doc(db, "usernames", input), { email: auth.currentUser.email });
-    await setDoc(doc(db, "email_to_user", auth.currentUser.email), { username: input });
-
-    myUsername = input;
+    // Set records
+    await setDoc(doc(db, "usernames", val), { email: auth.currentUser.email });
+    await setDoc(doc(db, "email_to_username", auth.currentUser.email), { username: val });
+    
+    myUsername = val;
     document.getElementById('username-modal').style.display = 'none';
     startApp();
 };
 
 function startApp() {
     document.getElementById('app-container').style.display = 'flex';
-    document.getElementById('my-name-display').innerText = `@${myUsername}`;
+    document.getElementById('display-my-name').innerText = `@${myUsername}`;
     loadFriends();
 }
 
-// --- 3. FRIEND SYSTEM ---
+// --- FRIENDS ---
 document.getElementById('add-friend-btn').onclick = async () => {
     const target = document.getElementById('friend-search').value.toLowerCase().trim();
     if (!target || target === myUsername) return;
@@ -95,10 +94,10 @@ function loadFriends() {
     });
 }
 
-// --- 4. MESSAGING ---
+// --- MESSAGING ---
 function openChat(friendName) {
     activeChatId = [myUsername, friendName].sort().join("_");
-    document.getElementById('chat-title').innerText = `@ ${friendName}`;
+    document.getElementById('chat-header-title').innerText = `@ ${friendName}`;
     document.getElementById('message-input').disabled = false;
     loadMessages();
 }
@@ -130,5 +129,6 @@ function loadMessages() {
     });
 }
 
-document.getElementById('login-btn').onclick = () => signInWithRedirect(auth, provider);
+// Popup Login
+document.getElementById('login-btn').onclick = () => signInWithPopup(auth, provider);
 document.getElementById('logout-btn').onclick = () => signOut(auth);
