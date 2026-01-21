@@ -7,20 +7,10 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-    <div id="username-modal" style="display: none;">
-        <div class="modal-content">
-            <h2>Create a Username</h2>
-            <p>What should friends call you?</p>
-            <input type="text" id="username-input" placeholder="Username (no spaces)...">
-            <button id="save-username-btn">Start Chatting</button>
-        </div>
-    </div>
-
     <div id="auth-container">
         <div class="login-card">
             <h1>SchoolDiscord</h1>
-            <p>A place for schooldiscord67</p>
+            <p>Welcome back!</p>
             <button id="login-btn">Sign in with Google</button>
         </div>
     </div>
@@ -28,31 +18,21 @@
     <div id="app-container" style="display: none;">
         <nav class="sidebar">
             <div class="sidebar-header"><h3>Friends</h3></div>
-            
             <div class="search-area">
-                <input type="text" id="friend-search" placeholder="Friend's username...">
-                <button id="add-friend-btn">+</button>
+                <input type="text" id="friend-search" placeholder="Enter friend's Gmail...">
+                <button id="add-friend-btn">Add</button>
             </div>
-
-            <div id="friends-list">
-                </div>
-
-            <div class="user-profile">
-                <span id="my-username-display">@loading...</span>
-                <button id="logout-btn">Logout</button>
-            </div>
+            <div id="friends-list"></div>
+            <button id="logout-btn">Logout</button>
         </nav>
 
         <main class="chat-area">
             <header class="chat-header">
-                <span id="chat-title">Select a friend to message</span>
+                <span id="chat-with-title">Select a friend</span>
             </header>
-            
-            <div id="messages-container">
-                </div>
-
+            <div id="messages-container"></div>
             <div class="input-area">
-                <input type="text" id="message-input" placeholder="Type a message..." disabled autocomplete="off">
+                <input type="text" id="message-input" placeholder="Message..." disabled>
             </div>
         </main>
     </div>
